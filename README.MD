@@ -91,6 +91,38 @@ public class UsageExample {
 }
 ```
 type in : mvn clean test
+
+A few test methods of usage:
+```java
+    @Test
+    public void testMainWithFileListing() throws ClassNotFoundException, NotFoundException, CannotCompileException, IOException, ParseException{
+        String cmd="-set set[a-zA-Z0-9]+ -src src/generated/java -file class-listings.txt";
+        File file3 = getFile(new File("src/generated/java"), pojo3B.class);
+        File file4 = getFile(new File("src/generated/java"), pojo4B.class);
+        file3.delete();
+        file4.delete();
+        FluentBuilders.main(cmd.split(" "));
+        
+        Assert.assertTrue(file3.exists());
+        Assert.assertTrue(file4.exists());
+        file3.delete();
+        file4.delete();
+    }
+    @Test
+    public void testMainWithClassNames() throws ClassNotFoundException, NotFoundException, CannotCompileException, IOException, ParseException{
+        String cmd="-set set[a-zA-Z0-9]+ -src src/generated/java -cls "+pojo3A.class.getName()+","+pojo4A.class.getName();
+        File file3 = getFile(new File("src/generated/java"), pojo3A.class);
+        File file4 = getFile(new File("src/generated/java"), pojo4A.class);
+        file3.delete();
+        file4.delete();
+        FluentBuilders.main(cmd.split(" "));
+        
+        Assert.assertTrue(file3.exists());
+        Assert.assertTrue(file4.exists());
+        file3.delete();
+        file4.delete();
+    }
+```
  
 Visitor:
 -------

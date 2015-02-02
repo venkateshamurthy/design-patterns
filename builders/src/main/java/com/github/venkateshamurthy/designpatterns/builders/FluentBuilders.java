@@ -1,9 +1,12 @@
 package com.github.venkateshamurthy.designpatterns.builders;
-
+import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.*;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +18,14 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.fuin.srcgen4javassist.SgClass;
 import org.fuin.srcgen4javassist.SgClassPool;
 
@@ -61,18 +72,62 @@ import com.fluentinterface.builder.Builder;
  * 
  * @author venkateshamurthyts@google.com */
 public class FluentBuilders {
+    /** Command options enum*/
+    protected static enum CMD_OPTIONS{
+        FILE_LISTING("file","file-listing"),
+        CLASS_NAMES("cls","classes"),
+        SRC_FOLDER("src","src-folder-name"),
+        SET_METHOD_PATTERN("set","set-method-pattern"),
+        HELP("h","help");
+        private final String shorter;
+        private final String longer;
+        CMD_OPTIONS(String shorter,String longer){
+            this.shorter=shorter;
+            this.longer=longer;
+        }
+        public String shorter() {
+            return shorter;
+        }
+        public String longer() {
+            return longer;
+        }
+        public String option(CommandLine cmdLine){
+            return cmdLine.getOptionValue(longer);
+        }
+        public String option(CommandLine cmdLine,String defaultValue){
+            return cmdLine.getOptionValue(longer,defaultValue);
+        }
+        public boolean selected(CommandLine cmdLine){
+            return cmdLine.hasOption(longer);
+        }
+    }
+    
+
     /** Standard mavenized projects hold sources in this folder */
     public static final String typicalSourceFolderRoot = "src/main/java";
+    
     /** A typical pattern string for all setter methods of an object */
     public static final String typicalSetMethodPattern = "set[a-zA-Z0-9]+";
+
+    /** A set of command line options */
+    private static final Options cmdLineOptions = new Options()
+            .addOption( SET_METHOD_PATTERN.shorter(), 
+                        SET_METHOD_PATTERN.longer(), true, "A Regular Expression representing the typical setters of a pojo")
+            .addOption( SRC_FOLDER.shorter(), 
+                        SRC_FOLDER.longer(), true, "A Filesystem folder path where the source code will be generated")
+            .addOptionGroup(
+                    new OptionGroup()
+                            .addOption(new Option(CLASS_NAMES.shorter(), CLASS_NAMES.longer(), true, "A comma separated set of canonical POJO class names"))
+                            .addOption(new Option(FILE_LISTING.shorter(), FILE_LISTING.longer(), true,
+                                            "A text file in the class path that contains each class name (canonical name) in a line")));
     /** A {@link SgClassPool} for writing source content of a class */
-    private static final SgClassPool sgPool = new SgClassPool();
+    private final SgClassPool sgPool = new SgClassPool();
     /** A {@link ClassPool} that can create a Builder interface given methods */
-    private static final ClassPool ctPool = ClassPool.getDefault();
+    private final ClassPool ctPool = new ClassPool(true);
     /** A {@link CtClass} for {@link Builder} from fluentinterface */
-    private static final CtClass fluentBuilderClass;
-    /** Static block */
-    static {
+    private final CtClass fluentBuilderClass;
+    // block
+    {
         try {
             fluentBuilderClass = ctPool.get(Builder.class.getCanonicalName());
         } catch (final NotFoundException e) {
@@ -111,7 +166,7 @@ public class FluentBuilders {
      * @param file to write content
      * @param content to write to a file */
     private void writeToFile(final File file, final String content) {
-        assert !file.exists();
+        assert file != null && !file.exists();
         file.delete();
         try {
             file.getParentFile().mkdirs();
@@ -135,9 +190,8 @@ public class FluentBuilders {
      * @throws NotFoundException */
     private boolean addMethodToBuilder(final CtClass interfaceCtClass, final CtMethod method) throws CannotCompileException, NotFoundException {
         final boolean isABuilderMethod = setMethodNamePattern.matcher(method.getName()).matches();
-        if (isABuilderMethod) {
+        if (isABuilderMethod)
             interfaceCtClass.addMethod(new CtMethod(interfaceCtClass, method.getName(), method.getParameterTypes(), interfaceCtClass));
-        }
         return isABuilderMethod;
     }
 
@@ -148,6 +202,7 @@ public class FluentBuilders {
     private boolean isNotAPublicClass(final Class<?> thisPojoClass) {
         return thisPojoClass != null && (Modifier.PUBLIC & thisPojoClass.getModifiers()) != Modifier.PUBLIC;
     }
+
 
     /** A default creation method assuming set method pattern as {@value #typicalSetMethodPattern} and the source folder as
      * {@value #typicalSourceFolderRoot}
@@ -196,14 +251,18 @@ public class FluentBuilders {
             throw new IllegalArgumentException("The Parameters to this method must be an array of valid public class objects");
         final List<Class<?>> failedList = new ArrayList<>();
         for (final Class<?> thisPojoClass : pojoClasses) {
+
             if (isNotAPublicClass(thisPojoClass))
-                throw new IllegalArgumentException("The Builders can only be created for a valid public class objects");
-            final String interfaceName = thisPojoClass.getPackage().getName() + "." + thisPojoClass.getSimpleName() + "Builder";
-            final CtClass pojoBuilderInterface = ctPool.makeInterface(interfaceName, fluentBuilderClass);
+                throw new IllegalArgumentException("The Builders can only be created for a valid public class objects:" + thisPojoClass.getName());
+
+            final String interfaceName = String.format("%s.%sBuilder", thisPojoClass.getPackage().getName(), thisPojoClass.getSimpleName());
+            CtClass pojoBuilderInterface = ctPool.makeInterface(interfaceName, fluentBuilderClass);
             boolean doesThisPojoHasBuilderMethods = false;
+
             for (final CtMethod method : ctPool.get(thisPojoClass.getName()).getMethods()) {
                 doesThisPojoHasBuilderMethods = addMethodToBuilder(pojoBuilderInterface, method) || doesThisPojoHasBuilderMethods;
             }
+
             if (doesThisPojoHasBuilderMethods) {
                 final SgClass sgClass = SgClass.create(sgPool, pojoBuilderInterface.toClass());
                 final File builderSrcFile = new File(sourceFolderRoot, sgClass.getNameAsSrcFilename());
@@ -227,27 +286,89 @@ public class FluentBuilders {
     }
 
     /** @return {@link #fluentBuilderClass} */
-    public static CtClass getFluentbuilderclass() {
+    public CtClass getFluentbuilderclass() {
         return fluentBuilderClass;
     }
 
-    /** A Test main method
+    /** A main method that accepts a Command line syntax as follows
+     * 
+     * <pre>
+     * usage: 
+     *  -cls,--classes <arg>              A comma separated set of canonical POJO
+     *                                    class names
+     *  -set,--set-method-pattern <arg>   A Regular Expression representing the
+     *                                    typical setters of a pojo
+     *  -src,--src-folder-name <arg>      A Filesystem folder path where the
+     *                                    source code will be generated
+     * </pre>
      * 
      * @param args a list of fully qualified class names
      * @throws NotFoundException
      * @throws CannotCompileException
      * @throws IOException
-     * @throws ClassNotFoundException */
-    public static void main(final String[] args) throws NotFoundException, CannotCompileException, IOException, ClassNotFoundException {
-        if (args.length == 0)
-            throw new IllegalArgumentException("Argument to this program needs to be a space separated list "
+     * @throws ClassNotFoundException
+     * @throws ParseException */
+    public static void main(final String[] args) throws NotFoundException, CannotCompileException, IOException, ClassNotFoundException,
+            ParseException {
+        final CommandLineParser parser = new DefaultParser();
+        final HelpFormatter formatter = new HelpFormatter();
+        final CommandLine cmdLine = parser.parse(cmdLineOptions, args);
+
+        if (HELP.selected(cmdLine)) {
+            formatter.printHelp(FluentBuilders.class.getSimpleName() + ":", cmdLineOptions);
+            System.exit(0);
+        }
+        final String classNamesCSV = getClassNamesAsCSV(cmdLine);
+        if (classNamesCSV == null || classNamesCSV.isEmpty()) {
+            formatter.printHelp(FluentBuilders.class.getSimpleName() + ":", cmdLineOptions);
+            throw new IllegalArgumentException("Argument to this program needs to be a comma separated list "
                     + "of well defined, valid and fully qualified POJO class names");
-        final String[] classNames = args;
+        }
+
+        final String setNamePattern = SET_METHOD_PATTERN.option(cmdLine, typicalSetMethodPattern);
+        final String srcFolderName = SRC_FOLDER.option(cmdLine, typicalSourceFolderRoot);
+
+        final FluentBuilders fluentBuilders = FluentBuilders.create(setNamePattern, srcFolderName);
+        fluentBuilders.writeInterface(getClassArray(classNamesCSV));
+    }
+
+    /** This method checks for class names listing from either the {@value #FILE_LISTING_OPTION} option or from the option {@value #CLASS_NAMES_OPTION}
+     * 
+     * @param cmdLine
+     * @return Class names as CSV
+     * @throws IOException */
+    private static String getClassNamesAsCSV(final CommandLine cmdLine) throws IOException {
+        String classNamesCSV = null;
+        if (FILE_LISTING.selected(cmdLine)) {
+            try (final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            ClassLoader.getSystemResourceAsStream(
+                                    FILE_LISTING.option(cmdLine))))) {
+                final StringBuilder sb = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null)
+                    sb.append(line).append(",");
+                classNamesCSV = sb.toString();
+            }
+        } else if (CLASS_NAMES.selected(cmdLine))
+            classNamesCSV = CLASS_NAMES.option(cmdLine);
+        return classNamesCSV;
+    }
+    
+
+    /** Gets class names from a CSV string of class names
+     * 
+     * @param classNamesCSV
+     * @return Class[]
+     * @throws ClassNotFoundException */
+    private static Class<?>[] getClassArray(final String classNamesCSV) throws ClassNotFoundException {
+        assert classNamesCSV != null && !classNamesCSV.isEmpty();
+        final String[] classNames = classNamesCSV.split(",");
         final Class<?>[] classList = new Class<?>[classNames.length];
         for (int i = 0; i < classNames.length; i++) {
             classList[i] = Class.forName(classNames[i]);
         }
-        final FluentBuilders fluentBuilders = FluentBuilders.create();
-        fluentBuilders.writeInterface(classList);
+        return classList;
     }
+
 }

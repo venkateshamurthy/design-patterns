@@ -61,6 +61,7 @@
 								<argument>-classpath</argument>
 								<classpath />
 								<argument>com.github.venkateshamurthy.designpatterns.builders.FluentBuilders</argument>
+								<argument>-cls</argument>
 								<argument>com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClass</argument>
 							</arguments>
 						</configuration>
