@@ -112,7 +112,14 @@ public class FluentBuilders {
      * @param content to write to a file */
     private void writeToFile(final File file, final String content) {
         assert !file.exists();
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+        file.delete();
+        try {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        } catch (IOException e1) {
+            throw new IllegalStateException(e1);
+        }
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
             bw.write(content);
         } catch (final Exception e) {
             throw new IllegalStateException(e);
