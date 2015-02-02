@@ -8,14 +8,18 @@ Builder:
 --------
 Two modules builders and builders-usage to demonstrate auto-generation of interface for builder and a usage of generated interface to crate a proxy based fluent builder.
 
-My special thanks to the following projects and their authors
+My special thanks to the following projects and their authors:
+
    *1. fluent-interface-proxy(https://github.com/davidmarquis/fluent-interface-proxy), 
+   
    *2. srcgen4javassist
+   
    *3. javassist
 
 How to compile and test:
 
 To create and install builders module: mvn --projects builders clean install
+
 To create proxy interface and test usage: mvn --projects builders-usage clean test
 
 Example usage:
