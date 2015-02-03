@@ -176,7 +176,7 @@ public class FluentBuilders {
      * @param file to write content
      * @param content to write to a file */
     private void writeToFile(final File file, final String content) {
-        assert file != null && !file.exists();
+        assert file != null;
         file.delete();
         try {
             file.getParentFile().mkdirs();
