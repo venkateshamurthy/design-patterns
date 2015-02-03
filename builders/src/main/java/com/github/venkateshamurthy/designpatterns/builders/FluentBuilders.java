@@ -240,6 +240,7 @@ public class FluentBuilders {
             if (Modifier.isPublic(method.getModifiers())
                     && setMethodNamePattern.matcher(method.getName()).matches() && 
                         !ctMethodSet.contains(ctMethod = ctClass.getDeclaredMethod(method.getName()))) {
+                //Make sure the types u get from method is really is of a field type
                 boolean isAdded = propTypes.containsAll(Arrays.asList(method.getParameterTypes())) && ctMethodSet.add(ctMethod);
                 if (!isAdded)
                     log.log(Level.WARNING,method.getName() + " is not added");
@@ -253,7 +254,7 @@ public class FluentBuilders {
      * @param thisPojoClass
      * @param ctClass
      * @param ctMethodSet can be a subset of setters for fields in this class
-     * @return set of classes
+     * @return set of classes representing field types
      * @throws NotFoundException
      */
     @SuppressWarnings("serial")
@@ -261,10 +262,9 @@ public class FluentBuilders {
             throws NotFoundException {
         return new LinkedHashSet<Class<?>>() {
             {   //Get fields
-                final Field[] fields = thisPojoClass.getDeclaredFields();
                 try {
                     final Object bean = thisPojoClass.newInstance();//create an instance
-                    for (Field field : fields) {
+                    for (Field field : thisPojoClass.getDeclaredFields()) {
                         PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, field.getName());
                         this.add(pd.getPropertyType()); //irrespective of CtMethod just add
                         final Method mutator = pd.getWriteMethod();
