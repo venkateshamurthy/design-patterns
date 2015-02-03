@@ -1,5 +1,6 @@
 package com.github.venkateshamurthy.designpatterns.builders;
 
+import java.beans.IntrospectionException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;

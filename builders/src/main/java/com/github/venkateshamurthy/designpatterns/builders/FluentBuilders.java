@@ -12,9 +12,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javassist.CannotCompileException;
@@ -23,6 +26,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -191,15 +195,15 @@ public class FluentBuilders {
         }
     }
 
-    /** Adds a method signature to a builder interface
+    /** Add method signature(s) to a builder interface
      * 
      * @param interfaceCtClass the {@link CtClass} representing the Builder interface
-     * @param methods the set of {@link CtMethod}s representing the builder methods
+     * @param writableMethods the set of {@link CtMethod}s representing the builder methods
      * @return true if the method is a Builder method (such as setXYZ(...))
      * @throws CannotCompileException
      * @throws NotFoundException */
-    private void addMethodToBuilder(final CtClass interfaceCtClass, final List<CtMethod> methods) throws CannotCompileException, NotFoundException {
-        for(CtMethod method:methods)
+    private void addMethodsToBuilder(final CtClass interfaceCtClass, final Set<CtMethod> writableMethods) throws CannotCompileException, NotFoundException {
+        for(CtMethod method:writableMethods)
             interfaceCtClass.addMethod(new CtMethod(interfaceCtClass, 
                     method.getName(), method.getParameterTypes(), interfaceCtClass));
     }
@@ -220,11 +224,18 @@ public class FluentBuilders {
      * @return List of {@link CtMethod}
      * @throws NotFoundException when thisPojoClass is not found
      */
-    private List<CtMethod> getWritableMethods(Class<?> thisPojoClass) throws NotFoundException{
-        List<CtMethod> methods=new ArrayList<>();
+    private Set<CtMethod> getWritableMethods(Class<?> thisPojoClass) throws NotFoundException{
+        final Set<CtMethod> methods=new LinkedHashSet<>();
+        
         for(CtMethod method:ctPool.get(thisPojoClass.getName()).getDeclaredMethods()){
             if(setMethodNamePattern.matcher(method.getName()).matches())
                 methods.add(method);
+        }
+        PropertyDescriptor[] props=PropertyUtils.getPropertyDescriptors(thisPojoClass);
+        for(PropertyDescriptor prop: props){
+            final Method mutator=prop.getWriteMethod();
+            if(mutator!=null)
+                methods.add(ctPool.get(thisPojoClass.getName()).getDeclaredMethod(mutator.getName()));
         }
         return methods;    
     }
@@ -283,7 +294,7 @@ public class FluentBuilders {
             if (isNotAPublicClass(thisPojoClass))
                 throw new IllegalArgumentException("The Builders can only be created for a valid public class objects:" + thisPojoClass.getName());
             
-            final List<CtMethod> writableMethods=getWritableMethods(thisPojoClass);
+            final Set<CtMethod> writableMethods=getWritableMethods(thisPojoClass);
             
             if(writableMethods.isEmpty()){
                 failedList.add(thisPojoClass);
@@ -292,7 +303,7 @@ public class FluentBuilders {
                                                 thisPojoClass.getPackage().getName(), thisPojoClass.getSimpleName());
                 final CtClass pojoBuilderInterface = ctPool.makeInterface(interfaceName, fluentBuilderClass);
     
-                addMethodToBuilder(pojoBuilderInterface, writableMethods);
+                addMethodsToBuilder(pojoBuilderInterface, writableMethods);
                 final SgClass sgClass = SgClass.create(sgPool, pojoBuilderInterface.toClass());
                 final File builderSrcFile = new File(sourceFolderRoot, sgClass.getNameAsSrcFilename());
                 final String sgClassString = processSgClassContent(thisPojoClass, sgClass);
