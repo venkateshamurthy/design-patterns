@@ -120,7 +120,7 @@ public class FluentBuilders {
                         .addOption(new Option(CLASS_NAMES.shorter(), CLASS_NAMES.longer(), true, "A comma separated set of canonical POJO class names"))
                         .addOption(new Option(FILE_LISTING.shorter(), FILE_LISTING.longer(), true,
                                 "A text file in the class path that contains each class name (canonical name) in a line"));
-    /** A set of command line options */
+    /** A set of command line options. */
     private static final Options cmdLineOptions = new Options()
             .addOption( SET_METHOD_PATTERN.shorter(), 
                         SET_METHOD_PATTERN.longer(), true, "A Regular Expression representing the typical setters of a pojo")
@@ -213,7 +213,9 @@ public class FluentBuilders {
     }
     
     /**
-     * Gets a list of writable methods / mutator methods
+     * Gets a list of writable methods / mutator methods.
+     * <br>
+     * TODO: Must ensure that this class has mutators for the properties and not just some setters for random purpose
      * @param thisPojoClass for which mutator methods must be found
      * @return List of {@link CtMethod}
      * @throws NotFoundException when thisPojoClass is not found
@@ -315,19 +317,9 @@ public class FluentBuilders {
         return fluentBuilderClass;
     }
 
-    /** A main method that accepts a Command line syntax as follows
+    /** A main method that accepts a Command line syntax as is represented in {@value #cmdLineOptions}
      * 
-     * <pre>
-     * usage: 
-     *  -cls,--classes <arg>              A comma separated set of canonical POJO
-     *                                    class names
-     *  -set,--set-method-pattern <arg>   A Regular Expression representing the
-     *                                    typical setters of a pojo
-     *  -src,--src-folder-name <arg>      A Filesystem folder path where the
-     *                                    source code will be generated
-     * </pre>
-     * 
-     * @param args a list of fully qualified class names
+     * @param args need to follow a command line style syntax as indicated by  --help option to get more details
      * @throws NotFoundException
      * @throws CannotCompileException
      * @throws IOException
