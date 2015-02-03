@@ -184,7 +184,7 @@ public class FluentBuilders {
         } catch (IOException e1) {
             throw new IllegalStateException(e1);
         }
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) {
             bw.write(content);
         } catch (final Exception e) {
             throw new IllegalStateException(e);
