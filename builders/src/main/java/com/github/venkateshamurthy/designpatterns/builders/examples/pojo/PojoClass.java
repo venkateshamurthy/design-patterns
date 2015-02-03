@@ -1,6 +1,7 @@
 package com.github.venkateshamurthy.designpatterns.builders.examples.pojo;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 /**
  * A Demonstration example pojo that could be used to show builder interface generation.
@@ -30,6 +31,10 @@ public class PojoClass {
     }
     public void setToList(List<String> toList) {
         this.toList = toList;
+    }
+    
+    public void setJunk123(Date junk123){
+        
     }
     public String toString() {
         return getClass().getSimpleName() + ":" + "a=" + a + " b=" + b+" list="+toList.toString();

@@ -1,4 +1,5 @@
 package com.github.venkateshamurthy.designpatterns.builders;
+
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.CLASS_NAMES;
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.FILE_LISTING;
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.HELP;
@@ -12,9 +13,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,63 +86,64 @@ import com.fluentinterface.builder.Builder;
  * 
  * @author venkateshamurthyts@google.com */
 public class FluentBuilders {
-    /** Command options enum*/
-    protected static enum CMD_OPTIONS{
-        FILE_LISTING("file","file-listing"),
-        CLASS_NAMES("cls","classes"),
-        SRC_FOLDER("src","src-folder-name"),
-        SET_METHOD_PATTERN("set","set-method-pattern"),
-        HELP("h","help");
+    /** Command options enum */
+    protected static enum CMD_OPTIONS {
+        FILE_LISTING("file", "file-listing"), CLASS_NAMES("cls", "classes"), SRC_FOLDER("src", "src-folder-name"), SET_METHOD_PATTERN("set",
+                "set-method-pattern"), HELP("h", "help");
         private final String shorter;
         private final String longer;
-        CMD_OPTIONS(String shorter,String longer){
-            this.shorter=shorter;
-            this.longer=longer;
+
+        CMD_OPTIONS(String shorter, String longer) {
+            this.shorter = shorter;
+            this.longer = longer;
         }
+
         public String shorter() {
             return shorter;
         }
+
         public String longer() {
             return longer;
         }
-        public String option(CommandLine cmdLine){
+
+        public String option(CommandLine cmdLine) {
             return cmdLine.getOptionValue(longer);
         }
-        public String option(CommandLine cmdLine,String defaultValue){
-            return cmdLine.getOptionValue(longer,defaultValue);
+
+        public String option(CommandLine cmdLine, String defaultValue) {
+            return cmdLine.getOptionValue(longer, defaultValue);
         }
-        public boolean selected(CommandLine cmdLine){
+
+        public boolean selected(CommandLine cmdLine) {
             return cmdLine.hasOption(longer);
         }
     }
-    
-    
+
     /** Standard mavenized projects hold sources in this folder */
     public static final String typicalSourceFolderRoot = "src/main/java";
-    
+
     /** A typical pattern string for mutator methods prefixed with set/add/put. However the suffix part must represent a property name */
     public static final String typicalSetMethodPattern = "(set|add|put)[a-zA-Z0-9_]+";
-    
+
     /** An OptionGroup for listing class names or file listing */
-    private static final OptionGroup group= new OptionGroup()
-                        .addOption(new Option(CLASS_NAMES.shorter(), CLASS_NAMES.longer(), true, "A comma separated set of canonical POJO class names"))
-                        .addOption(new Option(FILE_LISTING.shorter(), FILE_LISTING.longer(), true,
-                                "A text file in the class path that contains each class name (canonical name) in a line"));
+    private static final OptionGroup group = new OptionGroup().addOption(
+            new Option(CLASS_NAMES.shorter(), CLASS_NAMES.longer(), true, "A comma separated set of canonical POJO class names")).addOption(
+            new Option(FILE_LISTING.shorter(), FILE_LISTING.longer(), true,
+                    "A text file in the class path that contains each class name (canonical name) in a line"));
     /** A set of command line options. */
     private static final Options cmdLineOptions = new Options()
-            .addOption( SET_METHOD_PATTERN.shorter(), 
-                        SET_METHOD_PATTERN.longer(), true, "A Regular Expression representing the typical setters of a pojo")
-            .addOption( SRC_FOLDER.shorter(), 
-                        SRC_FOLDER.longer(), true, "A Filesystem folder path where the source code will be generated")
+            .addOption(SET_METHOD_PATTERN.shorter(), SET_METHOD_PATTERN.longer(), true,
+                    "A Regular Expression representing the typical setters of a pojo")
+            .addOption(SRC_FOLDER.shorter(), SRC_FOLDER.longer(), true, "A Filesystem folder path where the source code will be generated")
             .addOptionGroup(group);
-    
+
     /** A {@link SgClassPool} for writing source content of a class */
     private final SgClassPool sgPool = new SgClassPool();
     /** A {@link ClassPool} that can create a Builder interface given methods */
     private final ClassPool ctPool = new ClassPool(true);
     /** A {@link CtClass} for {@link Builder} from fluentinterface */
     private final CtClass fluentBuilderClass;
-  
+
     // block
     {
         group.setRequired(true);
@@ -202,10 +207,10 @@ public class FluentBuilders {
      * @return true if the method is a Builder method (such as setXYZ(...))
      * @throws CannotCompileException
      * @throws NotFoundException */
-    private void addMethodsToBuilder(final CtClass interfaceCtClass, final Set<CtMethod> writableMethods) throws CannotCompileException, NotFoundException {
-        for(CtMethod method:writableMethods)
-            interfaceCtClass.addMethod(new CtMethod(interfaceCtClass, 
-                    method.getName(), method.getParameterTypes(), interfaceCtClass));
+    private void addMethodsToBuilder(final CtClass interfaceCtClass, final Set<CtMethod> writableMethods) throws CannotCompileException,
+            NotFoundException {
+        for (CtMethod method : writableMethods)
+            interfaceCtClass.addMethod(new CtMethod(interfaceCtClass, method.getName(), method.getParameterTypes(), interfaceCtClass));
     }
 
     /** Return true if class passed is <b>not</b> a public class
@@ -215,29 +220,60 @@ public class FluentBuilders {
     private boolean isNotAPublicClass(final Class<?> thisPojoClass) {
         return thisPojoClass != null && (Modifier.PUBLIC & thisPojoClass.getModifiers()) != Modifier.PUBLIC;
     }
-    
-    /**
-     * Gets a list of writable methods / mutator methods.
-     * <br>
+
+    /** Gets a list of writable methods / mutator methods. <br>
      * TODO: Must ensure that this class has mutators for the properties and not just some setters for random purpose
+     * 
      * @param thisPojoClass for which mutator methods must be found
      * @return List of {@link CtMethod}
-     * @throws NotFoundException when thisPojoClass is not found
+     * @throws NotFoundException when thisPojoClass is not found */
+    private Set<CtMethod> getWritableMethods(final Class<?> thisPojoClass) throws NotFoundException {
+        final CtClass ctClass = ctPool.get(thisPojoClass.getName());
+        final Set<CtMethod> ctMethodSet = new LinkedHashSet<>();//Gets collected
+        final Set<Class<?>> propTypes = getPropertyClassTypes(thisPojoClass, ctClass, ctMethodSet);
+
+        for (Method method : thisPojoClass.getDeclaredMethods()) {
+            final CtMethod ctMethod;
+            if (Modifier.isPublic(method.getModifiers())
+                    && setMethodNamePattern.matcher(method.getName()).matches() && 
+                        !ctMethodSet.contains(ctMethod = ctClass.getDeclaredMethod(method.getName()))) {
+                boolean isAdded = propTypes.containsAll(Arrays.asList(method.getParameterTypes())) && ctMethodSet.add(ctMethod);
+                if (!isAdded)
+                    System.out.println(method.getName() + " is not added");
+            }
+        }
+        return ctMethodSet;
+    }
+
+    /**
+     * Gets class type of field parameters in a class for which setters are to be found
+     * @param thisPojoClass
+     * @param ctClass
+     * @param ctMethodSet can be a subset of setters for fields in this class
+     * @return set of classes
+     * @throws NotFoundException
      */
-    private Set<CtMethod> getWritableMethods(Class<?> thisPojoClass) throws NotFoundException{
-        final Set<CtMethod> methods=new LinkedHashSet<>();
-        
-        for(CtMethod method:ctPool.get(thisPojoClass.getName()).getDeclaredMethods()){
-            if(setMethodNamePattern.matcher(method.getName()).matches())
-                methods.add(method);
-        }
-        PropertyDescriptor[] props=PropertyUtils.getPropertyDescriptors(thisPojoClass);
-        for(PropertyDescriptor prop: props){
-            final Method mutator=prop.getWriteMethod();
-            if(mutator!=null)
-                methods.add(ctPool.get(thisPojoClass.getName()).getDeclaredMethod(mutator.getName()));
-        }
-        return methods;    
+    @SuppressWarnings("serial")
+    private Set<Class<?>> getPropertyClassTypes(final Class<?> thisPojoClass, final CtClass ctClass, final Set<CtMethod> ctMethodSet)
+            throws NotFoundException {
+        return new LinkedHashSet<Class<?>>() {
+            {   //Get fields
+                final Field[] fields = thisPojoClass.getDeclaredFields();
+                try {
+                    final Object bean = thisPojoClass.newInstance();//create an instance
+                    for (Field field : fields) {
+                        PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, field.getName());
+                        this.add(pd.getPropertyType()); //irrespective of CtMethod just add
+                        final Method mutator = pd.getWriteMethod();
+                        if (mutator != null && ctMethodSet.add(ctClass.getDeclaredMethod(mutator.getName()))) {
+                            System.out.println(mutator.getName() + " is ADDED");
+                        }
+                    }
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new NotFoundException("Exception Not Found:", e);
+                }
+            }
+        };
     }
 
     /** A default creation method assuming set method pattern as {@value #typicalSetMethodPattern} and the source folder as
@@ -276,7 +312,6 @@ public class FluentBuilders {
         return ReflectionBuilder.<T> implementationFor(pojoBuilderInterface).create();
     }
 
-   
     /** Writes the Builder interface source file for each of the pojo class that has setter methods.<br>
      * <b>Note:It is important to look at the method's return list of classes that could not be built for {@link Builder} </b>
      * 
@@ -293,16 +328,15 @@ public class FluentBuilders {
 
             if (isNotAPublicClass(thisPojoClass))
                 throw new IllegalArgumentException("The Builders can only be created for a valid public class objects:" + thisPojoClass.getName());
-            
-            final Set<CtMethod> writableMethods=getWritableMethods(thisPojoClass);
-            
-            if(writableMethods.isEmpty()){
+
+            final Set<CtMethod> writableMethods = getWritableMethods(thisPojoClass);
+
+            if (writableMethods.isEmpty()) {
                 failedList.add(thisPojoClass);
-            }else{
-                final String interfaceName = String.format("%s.%sBuilder", 
-                                                thisPojoClass.getPackage().getName(), thisPojoClass.getSimpleName());
+            } else {
+                final String interfaceName = String.format("%s.%sBuilder", thisPojoClass.getPackage().getName(), thisPojoClass.getSimpleName());
                 final CtClass pojoBuilderInterface = ctPool.makeInterface(interfaceName, fluentBuilderClass);
-    
+
                 addMethodsToBuilder(pojoBuilderInterface, writableMethods);
                 final SgClass sgClass = SgClass.create(sgPool, pojoBuilderInterface.toClass());
                 final File builderSrcFile = new File(sourceFolderRoot, sgClass.getNameAsSrcFilename());
@@ -330,7 +364,7 @@ public class FluentBuilders {
 
     /** A main method that accepts a Command line syntax as is represented in {@value #cmdLineOptions}
      * 
-     * @param args need to follow a command line style syntax as indicated by  --help option to get more details
+     * @param args need to follow a command line style syntax as indicated by --help option to get more details
      * @throws NotFoundException
      * @throws CannotCompileException
      * @throws IOException
@@ -368,10 +402,8 @@ public class FluentBuilders {
     private static String getClassNamesAsCSV(final CommandLine cmdLine) throws IOException {
         String classNamesCSV = null;
         if (FILE_LISTING.selected(cmdLine)) {
-            try (final BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(
-                            ClassLoader.getSystemResourceAsStream(
-                                    FILE_LISTING.option(cmdLine))))) {
+            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(FILE_LISTING
+                    .option(cmdLine))))) {
                 final StringBuilder sb = new StringBuilder();
                 String line = null;
                 while ((line = reader.readLine()) != null)
@@ -382,7 +414,6 @@ public class FluentBuilders {
             classNamesCSV = CLASS_NAMES.option(cmdLine);
         return classNamesCSV;
     }
-    
 
     /** Gets class names from a CSV string of class names
      * 

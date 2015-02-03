@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 
 import javassist.CannotCompileException;
@@ -36,7 +37,9 @@ public class TestFluentBuilders {
         public void setB(String b) {
             this.b = b;
         }
-
+        public void setJunk123(Date junk123){
+            
+        }
     }
 
     private static class pojo2 {
@@ -58,7 +61,9 @@ public class TestFluentBuilders {
         public void setB(String b) {
             this.b = b;
         }
-
+        public void setJunk123(Date junk123){
+            
+        }
     }
 
     public static class pojo3 {
@@ -80,7 +85,9 @@ public class TestFluentBuilders {
         public void setB(String b) {
             this.b = b;
         }
-
+        public void setJunk123(Date junk123){
+            
+        }
     }
     public static class pojo3A {
         int a;
@@ -101,7 +108,7 @@ public class TestFluentBuilders {
         public void setB(String b) {
             this.b = b;
         }
-
+        public void setJunk123(Date junk123){}
     }
     public static class pojo3B {
         int a;
@@ -122,7 +129,7 @@ public class TestFluentBuilders {
         public void setB(String b) {
             this.b = b;
         }
-
+        public void setJunk123(Date junk123){}
     }
     public static class pojo4 {
         int a;

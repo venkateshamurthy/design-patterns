@@ -5,8 +5,8 @@ public abstract interface PojoClassBuilder extends com.fluentinterface.builder.B
 
 public abstract com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setA(int p0);
 
-public abstract com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setB(java.lang.String p0);
-
 public abstract com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setToList(java.util.List p0);
+
+public abstract com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setB(java.lang.String p0);
 
 }
