@@ -5,6 +5,7 @@ import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.SET_METHOD_PATTERN;
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMD_OPTIONS.SRC_FOLDER;
 
+import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,6 +23,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
