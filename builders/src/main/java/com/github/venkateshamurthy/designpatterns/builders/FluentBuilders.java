@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javassist.CannotCompileException;
@@ -86,6 +88,7 @@ import com.fluentinterface.builder.Builder;
  * 
  * @author venkateshamurthyts@google.com */
 public class FluentBuilders {
+    private static final Logger log=Logger.getLogger(FluentBuilders.class.getCanonicalName());
     /** Command options enum */
     protected static enum CMD_OPTIONS {
         FILE_LISTING("file", "file-listing"), CLASS_NAMES("cls", "classes"), SRC_FOLDER("src", "src-folder-name"), SET_METHOD_PATTERN("set",
@@ -239,7 +242,7 @@ public class FluentBuilders {
                         !ctMethodSet.contains(ctMethod = ctClass.getDeclaredMethod(method.getName()))) {
                 boolean isAdded = propTypes.containsAll(Arrays.asList(method.getParameterTypes())) && ctMethodSet.add(ctMethod);
                 if (!isAdded)
-                    System.out.println(method.getName() + " is not added");
+                    log.log(Level.WARNING,method.getName() + " is not added");
             }
         }
         return ctMethodSet;
@@ -266,7 +269,7 @@ public class FluentBuilders {
                         this.add(pd.getPropertyType()); //irrespective of CtMethod just add
                         final Method mutator = pd.getWriteMethod();
                         if (mutator != null && ctMethodSet.add(ctClass.getDeclaredMethod(mutator.getName()))) {
-                            System.out.println(mutator.getName() + " is ADDED");
+                            log.log(Level.INFO,mutator.getName() + " is ADDED");
                         }
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
