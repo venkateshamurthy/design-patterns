@@ -93,6 +93,14 @@ public class UsageExample {
 type in : mvn clean test
 
 A few test methods of usage:
+This usage just requires you to provide a -file option whose value is a file in the class path containing list of fully qualified class names such as follows
+Eg: class-listings.txt
+
+```java
+com.github.venkateshamurthy.designpatterns.builders.TestFluentBuilders$Pojo3B
+com.github.venkateshamurthy.designpatterns.builders.TestFluentBuilders$Pojo4B
+```
+Now use the file name in the class path in the argument as follows.
 ```java
     @Test
     public void testMainWithFileListing() throws ClassNotFoundException, NotFoundException, CannotCompileException, IOException, ParseException{
@@ -108,6 +116,10 @@ A few test methods of usage:
         file3.delete();
         file4.delete();
     }
+```
+
+An another way could be to just to use the -cls option (can be handly if there are just few handful classes)
+```java
     @Test
     public void testMainWithClassNames() throws ClassNotFoundException, NotFoundException, CannotCompileException, IOException, ParseException{
         String cmd="-set set[a-zA-Z0-9]+ -src src/generated/java -cls "+pojo3A.class.getName()+","+pojo4A.class.getName();
