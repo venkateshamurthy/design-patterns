@@ -6,15 +6,27 @@ This project may utilize other open source libraries to fit the gaps and acknowl
 
 Builder:
 --------
-Two modules builders and builders-usage to demonstrate auto-generation of interface for builder and a usage of generated interface to crate a proxy based fluent builder.
+Many a times; the POJOs that is to be used are generated code from some tool/utility and hence may not be always possible to derive / inherit / add code to the already generated  code.
+
+When the need arises to construct a reasonably complex object; a builder for the POJO is necessary but would be better served if this builder was also genarated as part of POJO (a wishful thinking).
+
+Given this context; if a Builder needs to be added to an already generated code for POJO; one of the approaches would be to 
+
+   1. Create an Interface and add fluent setter methods to the fields. The interface additionally needs to provide a public <T> T build() method.
+ 
+   2. Next,  use any means(may be proxy) to generate a Pojo specific Builder implementation adhering to the interface for the client's use.
+
+For step 1; I am utilizing the open source libraries javassist and srcgen4javassist to create the interface and for step 2; i am using fluent-interface-proxy.
+   
+The module builders deals with provisioning the interface and wrapper methods to create the builder and builders-usage to demonstrate auto-generation of interface for builder and a usage of generated interface to crate a proxy based fluent builder.
 
 My special thanks to the following projects and their authors:
 
-   *1. fluent-interface-proxy(https://github.com/davidmarquis/fluent-interface-proxy), 
+   *1. fluent-interface-proxy(https://github.com/davidmarquis/fluent-interface-proxy)[license: http://opensource.org/licenses/MIT] 
    
-   *2. srcgen4javassist
+   *2. srcgen4javassist(http://www.fuin.org/srcgen4javassist/)[license: http://www.gnu.org/licenses/lgpl.html]
    
-   *3. javassist
+   *3. javassist(https://github.com/jboss-javassist/javassist)[license: Apache 2.0]
 
 How to compile and test:
 
@@ -61,6 +73,7 @@ public class PojoClass {
 }
 ```
 Now to create the builder interface from the above pojo: Reach upto the folder representing builders-usage.
+
 type in : mvn clean compile 
 
 This creates a PojoClassBuilder.java in the same package/folder as of PojoClass.java but in the builders-usage project
@@ -93,7 +106,10 @@ public class UsageExample {
 type in : mvn clean test
 
 A few test methods of usage:
+----------------------------
+
 This usage just requires you to provide a -file option whose value is a file in the class path containing list of fully qualified class names such as follows
+
 Eg: class-listings.txt
 
 ```java
