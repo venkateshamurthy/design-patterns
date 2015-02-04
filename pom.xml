@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -54,6 +64,129 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.rat</groupId>
+				<artifactId>apache-rat-plugin</artifactId>
+				<version>0.11</version>
+				<configuration>
+					<addLicenseHeaders>true</addLicenseHeaders>
+					<copyrightMessage>
+						Licensed to the Apache Software Foundation (ASF)
+						under one
+						or more contributor license agreements. See the NOTICE
+						file
+						distributed with this work for additional information
+						regarding copyright ownership. The ASF licenses this file
+						to you
+						under the Apache License, Version 2.0 (the
+						"License"); you may not
+						use this file except in compliance
+						with the License. You may obtain
+						a copy of the License at
+
+						http://www.apache.org/licenses/LICENSE-2.0
+
+						Unless required by
+						applicable law or agreed to in writing,
+						software distributed under
+						the License is distributed on an
+						"AS IS" BASIS, WITHOUT WARRANTIES
+						OR CONDITIONS OF ANY
+						KIND, either express or implied. See the
+						License for the
+						specific language governing permissions and
+						limitations
+						under the License.
+					</copyrightMessage>
+					<excludes>
+						<exclude>**/README.*</exclude>
+						<exclude>**/git/**</exclude>
+						<exclude>**/*LICENSE*</exclude>
+						<exclude>**/target/**</exclude>
+						<exclude>**/pom.xml</exclude>
+						<exclude>**/src/test/resources/**</exclude>
+						<exclude>**/src/main/resources/**</exclude>
+						<!-- PojoClassBuilder is generated code and hence dont care -->
+						<exclude>**/src/main/java/**/PojoClassBuilder*</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<!-- Plugin that gives ability to generate your projects site -->
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<!-- Reports that will be displayed on a generated site -->
+					<reportPlugins>
+						<!-- Produces a cross-reference of the project's sources. This is useful 
+							for other reports like PMD or Checkstyle. When this plugin is used with checkstyle 
+							you can see code that produces style warning/error in the report. -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-jxr-plugin</artifactId>
+							<version>2.1</version>
+							<configuration>
+								<aggregate>true</aggregate>
+							</configuration>
+						</plugin>
+						<!-- Checks projects code conventions -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-checkstyle-plugin</artifactId>
+							<version>2.6</version>
+							<configuration>
+								<configLocation>src/main/resources/config/checkstyle.xml</configLocation>
+								<excludes>
+									**/src/test/**
+								</excludes>
+								<excludes></excludes>
+							</configuration>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>
+			
 		</plugins>
 	</build>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+	<reporting>
+		<plugins>
+			
+		</plugins>
+	</reporting>
 </project>
