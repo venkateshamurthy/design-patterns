@@ -1,5 +1,8 @@
 A project to explore design patterns. Each pattern may contain module and usually a usage module would be present if there is auto-generate phase.
 
+# Travis CI Status [![Build Status](https://travis-ci.org/venkateshamurthy/java-design-patterns.svg)](https://travis-ci.org/venkateshamurthy/java-design-patterns)
+
+Add Travis CI status of the project to the Atom status bar.
 Note:
 -----
 This project may utilize other open source libraries to fit the gaps and acknowledges those authors for using it. 
