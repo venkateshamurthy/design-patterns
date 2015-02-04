@@ -1,0 +1,104 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.github.venkateshamurthy</groupId>
+		<artifactId>design-patterns</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>builders-pojobuilder</artifactId>
+	<name>builders-pojo-annotation</name>
+	<description>A Builders module to demonstrate annotation based Builder such as https://github.com/mkarneim/pojobuilder and http://projectlombok.org</description>
+	<dependencies>
+		<dependency>
+			<groupId>net.karneim</groupId>
+			<artifactId>pojobuilder</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.peichhorn</groupId>
+			<artifactId>lombok-pg</artifactId>
+			<version>0.11.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.peichhorn</groupId>
+			<artifactId>lombok-pg</artifactId>
+			<version>0.11.3</version>
+			<classifier>runtime</classifier>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.6.1</version>
+				<executions>
+					<execution>
+						<id>auto-clean</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<configuration>
+							<filesets>
+								<fileset>
+									<followSymlinks>false</followSymlinks>
+									<directory>${basedir}/src/generated/java</directory>
+									<includes>
+										<include>**/*.java</include>
+									</includes>
+								</fileset>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- If you need to keep the generated sources in a specific directory 
+				outside of the 'target' directory, then configure the 'generatedSourcesDirectory' 
+				of the 'maven-compiler-plugin'. Otherwise just remove this 'plugin' element 
+				completely. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<generatedSourcesDirectory>${basedir}/src/generated/java</generatedSourcesDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${basedir}/src/generated/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>

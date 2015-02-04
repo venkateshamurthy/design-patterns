@@ -38,7 +38,7 @@
 	<!-- See http://checkstyle.sf.net/config_misc.html#Translation -->
 	<module name="Translation" />
 	<module name="FileLength" />
-	
+
 	<module name="TreeWalker">
 
 		<!-- Checks for Javadoc comments. -->
@@ -134,10 +134,15 @@
 		<!-- See http://checkstyle.sf.net/config_blocks.html -->
 		<module name="AvoidNestedBlocks" />
 		<module name="EmptyBlock" />
-		<module name="LeftCurly" />
+		<module name="LeftCurly">
+			<property name="option" value="eol" />
+			<property name="severity" value="error" />
+		</module>
 		<module name="NeedBraces" />
-		<module name="RightCurly" />
-
+		<module name="RightCurly">
+			<property name="option" value="same" />
+			<property name="severity" value="error" />
+		</module>
 
 		<!-- Checks for common coding problems -->
 		<!-- See http://checkstyle.sf.net/config_coding.html -->
