@@ -294,6 +294,10 @@ public final class FluentBuilders {
         final Set<Class<?>> propTypes = getPropertyClassTypes(thisPojoClass, ctClass, ctMethodSet);
 
         for (Method method : thisPojoClass.getDeclaredMethods()) {
+            if (method.isSynthetic()) {
+                LOGGER.log(Level.WARNING, method.getName() + " is synthetically added, so ignoring");
+                continue;
+            }
             final CtMethod ctMethod = ctClass.getDeclaredMethod(method.getName());
             if (Modifier.isPublic(method.getModifiers())
                     && setMethodNamePattern.matcher(method.getName()).matches() 
@@ -319,23 +323,27 @@ public final class FluentBuilders {
     @SuppressWarnings("serial")
     private Set<Class<?>> getPropertyClassTypes(final Class<?> thisPojoClass, final CtClass ctClass, final Set<CtMethod> ctMethodSet)
             throws NotFoundException {
-        return new LinkedHashSet<Class<?>>() {
-            {   //Get fields
-                try {
-                    final Object bean = thisPojoClass.newInstance(); //create an instance
-                    for (Field field : thisPojoClass.getDeclaredFields()) {
-                        PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, field.getName());
-                        this.add(pd.getPropertyType()); //irrespective of CtMethod just add
-                        final Method mutator = pd.getWriteMethod();
-                        if (mutator != null && ctMethodSet.add(ctClass.getDeclaredMethod(mutator.getName()))) {
-                            LOGGER.log(Level.INFO, mutator.getName() + " is ADDED");
-                        }
-                    }
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    throw new NotFoundException("Exception Not Found:", e);
+        Set <Class<?>> set = new LinkedHashSet<>();
+        try {
+            final Object bean = thisPojoClass.newInstance(); //create an instance
+            for (Field field : thisPojoClass.getDeclaredFields()) {
+                if (field.isSynthetic()) {
+                    LOGGER.log(Level.WARNING,field.getName() + " is syntheticlly added, so ignoring");
+                    continue;
+                }
+                PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, field.getName());
+                
+                assert pd != null;
+                set.add(pd.getPropertyType()); //irrespective of CtMethod just add
+                final Method mutator = pd.getWriteMethod();
+                if (mutator != null && ctMethodSet.add(ctClass.getDeclaredMethod(mutator.getName()))) {
+                    LOGGER.log(Level.INFO, mutator.getName() + " is ADDED");
                 }
             }
-        };
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new NotFoundException("Exception Not Found:", e);
+        }
+        return set;
     }
 
     /** 
