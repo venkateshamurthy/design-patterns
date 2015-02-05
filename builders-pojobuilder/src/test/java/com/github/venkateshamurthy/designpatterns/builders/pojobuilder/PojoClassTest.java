@@ -46,13 +46,16 @@ import org.junit.Test;
  */
 public class PojoClassTest {
 
+	/**
+	 * Test Annotation Builder.
+	 */
 	@Test
 	public void testAnnBuilder() {
 		PojoClassBuilder pojoBuilder = new PojoClassBuilder();
 		PojoClass pojo = pojoBuilder.withName("venkat").withAddress("Home Address").withCompany("company").build();
 		Assert.assertNotNull(pojo);
 		Assert.assertEquals("Home Address", pojo.getAddress());
-		Assert.assertEquals("venkat",pojo.getName());
-		Assert.assertEquals("company",pojo.getCompany());
+		Assert.assertEquals("venkat", pojo.getName());
+		Assert.assertEquals("company", pojo.getCompany());
 	}
 }

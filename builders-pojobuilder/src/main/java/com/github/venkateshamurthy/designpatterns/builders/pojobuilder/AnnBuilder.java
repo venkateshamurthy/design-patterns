@@ -15,7 +15,8 @@
     KIND, either express or implied.  See the License for the
     specific language governing permissions and limitations
     under the License.    
-**/
+ **/
+
 package com.github.venkateshamurthy.designpatterns.builders.pojobuilder;
 
 import java.lang.annotation.ElementType;
@@ -24,13 +25,17 @@ import java.lang.annotation.Target;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 
 /**
- * An meta annotation composed of {@link  GeneratePojoBuilder} annotations as-is explained in 
- * <a href="https://github.com/mkarneim/pojobuilder">mkarneim's Github Page</a>.
+ * An meta annotation composed of {@link GeneratePojoBuilder} annotations as-is
+ * explained in <a href="https://github.com/mkarneim/pojobuilder">mkarneim's
+ * Github Page</a>.
+ * 
  * @author vemurthy
  */
-@GeneratePojoBuilder(withName = "*Builder", withBuilderInterface=Builder.class, withBuilderProperties=true, withGenerationGap=false)
-@javax.annotation.concurrent.Immutable // class-level annotation from JSR-305
-@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@GeneratePojoBuilder(withName = "*Builder", withBuilderInterface = Builder.class, 
+                     withBuilderProperties = true, withGenerationGap = false)
+@javax.annotation.concurrent.Immutable
+// class-level annotation from JSR-305
+@Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 public @interface AnnBuilder {
 
 }

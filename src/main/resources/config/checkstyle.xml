@@ -26,6 +26,7 @@
 
 <module name="Checker">
 
+
 	<!-- Checks that a package.html file exists for each package. -->
 	<!-- See http://checkstyle.sf.net/config_javadoc.html#PackageHtml -->
 	<!-- module name="PackageHtml" / -->

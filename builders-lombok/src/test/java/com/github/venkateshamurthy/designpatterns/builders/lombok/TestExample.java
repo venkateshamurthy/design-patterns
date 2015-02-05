@@ -16,21 +16,27 @@
     specific language governing permissions and limitations
     under the License.    
 **/
-package com.github.venkateshamurthy.designpatterns.builders.pojobuilder;
+package com.github.venkateshamurthy.designpatterns.builders.lombok;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Type Builder. 
- * <br>What could have been nice here is if the Builder interface could have handled a method T build(Object o...) as well.
- * 
- * @author vemurthy
- *
- * @param <T> is of type T
+ * The Class TestExample.
  */
-public interface Builder<T>  {
-    
-	/**
-	 * Builder method that returns instance of type T.
-	 * @return an instance of T
-	 */
-	T build();
+public class TestExample {
+    /**
+     * test string.
+     */
+    private final String test = "test";
+    /**
+     * Testing first.
+     */
+    @Test
+    public void test() {
+        Example example = Example.builder().foo(Integer.MAX_VALUE).bar(test).build();
+        Assert.assertEquals(Integer.MAX_VALUE, example.getFoo());
+        Assert.assertEquals(test, example.getBar());
+    }
 }
+
