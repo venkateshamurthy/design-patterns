@@ -156,7 +156,129 @@ An another way could be to just to use the -cls option (can be handly if there a
         file4.delete();
     }
 ```
- 
+Builder with AutoValue and Lombok:
+----------------------------------
+This is an example condensate with Google auto value. Here the POJO class needs to provide inner static abstract class with each attribute/property exposed an abstract method 
+```java
+package com.github.venkateshamurthy.designpatterns.builders.autovalue;
+import com.google.auto.value.AutoValue;
+
+/**
+ * Type PojoClass.
+ * 
+ * @author vemurthy
+ * 
+ */
+public final class PojoClass {
+    
+	@AutoValue
+	abstract static class Animal {
+		static Animal create(String name, int numberOfLegs) {
+			return new AutoValue_PojoClass_Animal(name, numberOfLegs);
+		}
+		abstract String name();
+		abstract int numberOfLegs();
+	}
+}
+
+```
+Usage of autovalue based builder:
+```java
+package com.github.venkateshamurthy.designpatterns.builders.autovalue;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import com.github.venkateshamurthy.designpatterns.builders.autovalue.PojoClass.Animal;
+
+/**
+ * Type PojoClassTest.
+ * @author vemurthy
+ *
+ */
+public class PojoClassTest {
+
+	/**
+	 * Tests Animal Builder.
+	 */
+	@Test
+	public void testAnimal() {
+	    final int legs = 4;
+		Animal dog = Animal.create("dog", legs);
+		assertEquals("dog", dog.name());
+		assertEquals(legs, dog.numberOfLegs());
+		// // You really don't need to write tests like these; just
+		// illustrating.
+		assertTrue(Animal.create("dog", legs).equals(dog));
+		assertFalse(Animal.create("cat", legs).equals(dog));
+		assertFalse(Animal.create("dog", legs - 1).equals(dog));
+		assertEquals("Animal{name=dog, numberOfLegs=4}", dog.toString());
+		PojoClass pojo = new PojoClass();
+		assertNotNull(pojo);
+	}
+
+}
+```
+
+
+The following is a lombok way of doing things and looks much leaner comparatively:
+```java
+package com.github.venkateshamurthy.designpatterns.builders.lombok;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.experimental.Builder;
+import lombok.experimental.FieldDefaults;
+
+@Builder
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+class Example {
+    private int foo;
+    private String bar;
+}
+```
+Usage of lombok based builders:
+```java
+package com.github.venkateshamurthy.designpatterns.builders.lombok;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * The Class TestExample.
+ */
+public class TestExample {
+    /**
+     * test string.
+     */
+    private final String test = "test";
+    /**
+     * Testing first.
+     */
+    @Test
+    public void test() {
+        Example example = Example.builder().foo(Integer.MAX_VALUE).bar(test).build();
+        Example example1 = Example.builder().foo(Integer.MIN_VALUE).bar(test + "1").build();
+        Assert.assertEquals(Integer.MAX_VALUE, example.getFoo());
+        Assert.assertEquals(test, example.getBar());
+        Assert.assertEquals(example1, example1);
+        Assert.assertTrue(example1.canEqual(example1));
+        Assert.assertFalse(example.equals(example1));
+        Assert.assertEquals(example.toString(), example.toString());
+        Assert.assertNotSame(example1.toString(), example.toString());
+        Assert.assertEquals(example.hashCode(), example.hashCode());
+        Assert.assertNotSame(example1.hashCode(), example.hashCode());
+        Assert.assertFalse(example.equals(null));
+        
+    }
+}
+```
+
 Visitor:
 -------
 TBD
