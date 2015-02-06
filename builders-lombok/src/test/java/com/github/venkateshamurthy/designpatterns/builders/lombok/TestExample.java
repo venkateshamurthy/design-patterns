@@ -35,8 +35,18 @@ public class TestExample {
     @Test
     public void test() {
         Example example = Example.builder().foo(Integer.MAX_VALUE).bar(test).build();
+        Example example1 = Example.builder().foo(Integer.MIN_VALUE).bar(test + "1").build();
         Assert.assertEquals(Integer.MAX_VALUE, example.getFoo());
         Assert.assertEquals(test, example.getBar());
+        Assert.assertEquals(example1, example1);
+        Assert.assertTrue(example1.canEqual(example1));
+        Assert.assertFalse(example.equals(example1));
+        Assert.assertEquals(example.toString(), example.toString());
+        Assert.assertNotSame(example1.toString(), example.toString());
+        Assert.assertEquals(example.hashCode(), example.hashCode());
+        Assert.assertNotSame(example1.hashCode(), example.hashCode());
+        Assert.assertFalse(example.equals(null));
+        
     }
 }
 

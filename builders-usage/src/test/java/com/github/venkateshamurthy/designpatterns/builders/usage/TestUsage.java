@@ -42,6 +42,8 @@ public class TestUsage {
         PojoClass pojo = FluentBuilders.<PojoClass, PojoClassBuilder>builder(PojoClass.class).setA(a).setB(b).build();
         Assert.assertEquals(a, pojo.getA());
         Assert.assertEquals(b, pojo.getB());
+        UsageExample.main(new String[] {});
+        Assert.assertNotNull(new UsageExample());
     }
 
 }

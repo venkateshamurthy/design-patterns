@@ -98,18 +98,21 @@ public class PojoClass {
     }
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ":" + "a=" + a + " b=" + b + " list=" + toList.toString();
+        return getClass().getSimpleName() + ":" + "a=" + a + " b=" + b + " list=" + toList;
     }
     @Override
     public int hashCode() {
-    	return a + b.hashCode();
+    	return a + (b != null ? b.hashCode() : 0);
     }
     
     @Override
     public boolean equals(Object o) {
         if (o != null) {
+            if (this == o) {
+                return true;
+            }
             PojoClass that = (PojoClass) o;
-            return that.a == a && (b != null && b.equals(that.b)) && toList.equals(that.toList);
+            return that.a == a && (b != null && b.equals(that.b)) && toList != null && toList.equals(that.toList);
         }
         return false;
     }

@@ -328,7 +328,7 @@ public final class FluentBuilders {
             final Object bean = thisPojoClass.newInstance(); //create an instance
             for (Field field : thisPojoClass.getDeclaredFields()) {
                 if (field.isSynthetic()) {
-                    LOGGER.log(Level.WARNING,field.getName() + " is syntheticlly added, so ignoring");
+                    LOGGER.log(Level.WARNING, field.getName() + " is syntheticlly added, so ignoring");
                     continue;
                 }
                 PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(bean, field.getName());

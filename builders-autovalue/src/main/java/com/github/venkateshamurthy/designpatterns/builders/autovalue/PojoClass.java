@@ -27,7 +27,8 @@ import com.google.auto.value.AutoValue;
  * 
  */
 
-public class PojoClass {
+public final class PojoClass {
+    
 	@AutoValue
 	abstract static class Animal {
 		static Animal create(String name, int numberOfLegs) {
