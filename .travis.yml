@@ -1,8 +1,6 @@
 language: java
 jdk:
   - oraclejdk7
-before_install:
- - mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get  -DrepoUrl=http://www.fuin.org/maven-repository   -Dartifact=org.fuin:srcgen4javassist:0.5.8
 after_success:
-  - echo "<settings><servers><server><id>ossrh</id><username>\${env.OSSRH_USER}</username><password>\${env.OSSRH_PASS}</password></server></servers></settings>" > ~/settings.xml
-  - mvn deploy --settings ~/settings.xml
+  - echo "<settings><servers><server><id>ossrh</id><username>\${env.OSSRH_USER}</username><password>\${env.OSSRH_PASS}</password></server></servers></settings>" > ~/oss-deploy-settings.xml
+  - mvn deploy --settings ~/oss-deploy-settings.xml

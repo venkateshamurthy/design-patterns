@@ -29,7 +29,7 @@ My special thanks to the following projects and their authors:
 
    *1. fluent-interface-proxy (https://github.com/davidmarquis/fluent-interface-proxy) [license: http://opensource.org/licenses/MIT] 
    
-   *2. srcgen4javassist (http://www.fuin.org/srcgen4javassist/) [license: http://www.gnu.org/licenses/lgpl.html]
+   *2. codemodel (https://codemodel.java.net/) [license: https://java.net/projects/codemodel/sources/svn/content/trunk/codemodel/LICENSE.html?rev=333]
    
    *3. javassist (https://github.com/jboss-javassist/javassist) [license: Apache 2.0]
 

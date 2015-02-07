@@ -18,7 +18,9 @@
 **/
 package com.github.venkateshamurthy.designpatterns.builders;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -484,6 +486,11 @@ public class TestFluentBuilders {
         
         Assert.assertTrue(file3.exists());
         Assert.assertTrue(file4.exists());
+        BufferedReader r = new BufferedReader(new FileReader(file3));
+        String l;
+        while ((l = r.readLine()) != null) {
+            System.out.println(l);
+        }
         file3.delete();
         file4.delete();
     }

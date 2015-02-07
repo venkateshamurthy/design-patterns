@@ -26,19 +26,16 @@ import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders
 import static com.github.venkateshamurthy.designpatterns.builders.FluentBuilders.CMDOPTIONS.SRC_FOLDER;
 
 import java.beans.PropertyDescriptor;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -64,11 +61,13 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import org.fuin.srcgen4javassist.SgClass;
-import org.fuin.srcgen4javassist.SgClassPool;
-
 import com.fluentinterface.ReflectionBuilder;
 import com.fluentinterface.builder.Builder;
+import com.sun.codemodel.ClassType;
+import com.sun.codemodel.JClass;
+import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JMethod;
 
 /** A Simple utility class to create Fluent Builders for a reasonably complex objects(POJOs) that are usually auto-generated with void returning set
  * methods. These Builders could come in handy when the number of properties in a POJO quickly run out of hand (say >4).
@@ -198,7 +197,7 @@ public final class FluentBuilders {
             .addOptionGroup(OPTIONAL_GROUP);
 
     /** A {@link SgClassPool} for writing source content of a class */
-    private final SgClassPool sgPool = new SgClassPool();
+    //private final SgClassPool sgPool = new SgClassPool();
     /** A {@link ClassPool} that can create a Builder interface given methods */
     private final ClassPool ctPool = new ClassPool(true);
     /** A {@link CtClass} for {@link Builder} from fluentinterface */
@@ -227,19 +226,7 @@ public final class FluentBuilders {
         sourceFolderRoot = sourceFolder;
     }
 
-    /** A method to deal with any filtering/transforming the content of SgClass passed. <br>
-     * For eg: {@link SgClass} for an interface when directly written adds interface keyword twice which needs to be eliminated
-     * 
-     * @param sgClass an instance of {@link SgClass}
-     * @return processed source content passed {@link SgClass} */
-    private String processSgClassContent(final Class<?> clz, final SgClass sgClass) {
-        assert sgClass != null;
-        return sgClass
-                .toString()
-                .replace("public abstract interface interface", "public abstract interface")
-                .replace("extends com.fluentinterface.builder.Builder", "extends com.fluentinterface.builder.Builder<" + clz.getCanonicalName() + ">");
-    }
-
+    
     /** Writes content to a File
      * 
      * @param file to write content
@@ -311,7 +298,36 @@ public final class FluentBuilders {
         }
         return ctMethodSet;
     }
+    private Set<Method> getWritableNormalMethods(final Class<?> thisPojoClass) throws NotFoundException {
+        final CtClass ctClass = ctPool.get(thisPojoClass.getName());
+        final Set<CtMethod> ctMethodSet = new LinkedHashSet<>(); //Gets collected
+        final Set<Method> methodSet = new LinkedHashSet<>(); //Gets collected
+        
+        final Set<Class<?>> propTypes = getPropertyClassTypes(thisPojoClass, ctClass, ctMethodSet);
 
+        for (Method method : thisPojoClass.getDeclaredMethods()) {
+            if (method.isSynthetic()) {
+                LOGGER.log(Level.WARNING, method.getName() + " is synthetically added, so ignoring");
+                continue;
+            }
+            if (Modifier.isPublic(method.getModifiers())
+                    && setMethodNamePattern.matcher(method.getName()).matches()) {
+                methodSet.add(method);
+            }
+            final CtMethod ctMethod = ctClass.getDeclaredMethod(method.getName());
+            if (Modifier.isPublic(method.getModifiers())
+                    && setMethodNamePattern.matcher(method.getName()).matches() 
+                    && !ctMethodSet.contains(ctMethod)) {
+                
+                //Make sure the types u get from method is really is of a field type
+                boolean isAdded = propTypes.containsAll(Arrays.asList(method.getParameterTypes())) && ctMethodSet.add(ctMethod);
+                if (!isAdded) {
+                    LOGGER.log(Level.WARNING, method.getName() + " is not added"); 
+                }
+            }
+        }
+        return methodSet;
+    }
     /**
      * Gets class type of field parameters in a class for which setters are to be found
      * @param thisPojoClass
@@ -406,24 +422,36 @@ public final class FluentBuilders {
 		}
         final List<Class<?>> failedList = new ArrayList<>();
         for (final Class<?> thisPojoClass : pojoClasses) {
-
             if (isNotAPublicClass(thisPojoClass)) {
 				throw new IllegalArgumentException("The Builders can only be created for a valid public class objects:" + thisPojoClass.getName());
 			}
 
             final Set<CtMethod> writableMethods = getWritableMethods(thisPojoClass);
+            final Set<Method> writableNormalMethods = getWritableNormalMethods(thisPojoClass);
 
             if (writableMethods.isEmpty()) {
                 failedList.add(thisPojoClass);
             } else {
                 final String interfaceName = String.format("%s.%sBuilder", thisPojoClass.getPackage().getName(), thisPojoClass.getSimpleName());
                 final CtClass pojoBuilderInterface = ctPool.makeInterface(interfaceName, fluentBuilderClass);
-
                 addMethodsToBuilder(pojoBuilderInterface, writableMethods);
-                final SgClass sgClass = SgClass.create(sgPool, pojoBuilderInterface.toClass());
-                final File builderSrcFile = new File(sourceFolderRoot, sgClass.getNameAsSrcFilename());
-                final String sgClassString = processSgClassContent(thisPojoClass, sgClass);
-                writeToFile(builderSrcFile, sgClassString);
+                JCodeModel cm = new JCodeModel();
+                try {
+                    JClass bl = new JCodeModel()._class(Builder.class.getName(), ClassType.INTERFACE).narrow(thisPojoClass);
+                    JDefinedClass cl = cm._class(interfaceName, ClassType.INTERFACE)._extends(bl);
+                    Class<?> builderClass = ctPool.toClass(pojoBuilderInterface);
+                    for (Method m : writableNormalMethods) {
+                        JMethod jm = cl.method(Modifier.PUBLIC, builderClass, m.getName());
+                        for (int i = 0; i < m.getParameterTypes().length; i++) {
+                            jm.param(m.getParameterTypes()[i], "arg" + i++);
+                        }
+                    }
+                    sourceFolderRoot.mkdirs();
+                    cm.build(sourceFolderRoot);
+                    
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
             }
         }
         return failedList;
