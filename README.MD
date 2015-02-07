@@ -1,6 +1,6 @@
 A project to explore design patterns. Each pattern may contain module and usually a usage module would be present if there is auto-generate phase.
 
-###  Build status:  [![Build Status](https://travis-ci.org/venkateshamurthy/design-patterns.svg?branch=master)](https://travis-ci.org/venkateshamurthy/design-patterns)  [![Coverage Status](https://coveralls.io/repos/venkateshamurthy/design-patterns/badge.svg?branch=master)](https://coveralls.io/r/venkateshamurthy/design-patterns)
+###  Build status:  [![Build Status](https://travis-ci.org/venkateshamurthy/design-patterns.svg?branch=master)](https://travis-ci.org/venkateshamurthy/design-patterns)  [![Coverage Status](https://coveralls.io/repos/venkateshamurthy/design-patterns/master.svg)](https://coveralls.io/r/venkateshamurthy/design-patterns)
 
 Note:
 -----
