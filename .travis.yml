@@ -2,6 +2,7 @@ language: java
 jdk:
   - oraclejdk7
 after_success:
+  - coveralls
   - mvn jacoco:report coveralls:report
   - echo "<settings><servers><server><id>ossrh</id><username>\${env.OSSRH_USER}</username><password>\${env.OSSRH_PASS}</password></server></servers></settings>" > ~/oss-deploy-settings.xml
   - mvn deploy --settings ~/oss-deploy-settings.xml
