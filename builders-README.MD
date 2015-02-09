@@ -6,9 +6,9 @@ When the need arises to construct a reasonably complex object; a builder for the
 
 Given this context; if a Builder needs to be added to an already generated code for POJO; one of the approaches would be to 
 
-..1. Create an Interface and add fluent setter methods to the fields. The interface additionally needs to provide a public <T> T build() method.
+  1. Create an Interface and add fluent setter methods to the fields. The interface additionally needs to provide a public <T> T build() method.
  
-..2. Next,  use any means(may be proxy) to generate a Pojo specific Builder implementation adhering to the interface for the client's use.
+  2. Next,  use any means(may be proxy) to generate a Pojo specific Builder implementation adhering to the interface for the client's use.
 
 For step 1; I am utilizing the open source libraries javassist and srcgen4javassist/codemodel to create the interface and for step 2; i am using fluent-interface-proxy.
    
@@ -16,11 +16,11 @@ The module builders deals with provisioning the interface and wrapper methods to
 
 My special thanks to the following projects and their authors:
 
-..1. [fluent-interface-proxy](https://github.com/davidmarquis/fluent-interface-proxy) [license:](http://opensource.org/licenses/MIT)
+  1. [fluent-interface-proxy](https://github.com/davidmarquis/fluent-interface-proxy) [license:](http://opensource.org/licenses/MIT)
    
-..2. [codemodel](https://codemodel.java.net/) [license:](https://java.net/projects/codemodel/sources/svn/content/trunk/codemodel/LICENSE.html?rev=333)
+  2. [codemodel](https://codemodel.java.net/) [license:](https://java.net/projects/codemodel/sources/svn/content/trunk/codemodel/LICENSE.html?rev=333)
    
-..3. [javassist](https://github.com/jboss-javassist/javassist) [license:] (https://github.com/jboss-javassist/javassist/blob/master/License.html "Apache 2.0")
+  3. [javassist](https://github.com/jboss-javassist/javassist) [license:] (https://github.com/jboss-javassist/javassist/blob/master/License.html "Apache 2.0")
 
 How to compile and test:
 
