@@ -20,7 +20,7 @@ Given this context; if a Builder needs to be added to an already generated code 
  
    2. Next,  use any means(may be proxy) to generate a Pojo specific Builder implementation adhering to the interface for the client's use.
 
-For step 1; I am utilizing the open source libraries javassist and srcgen4javassist to create the interface and for step 2; i am using fluent-interface-proxy.
+For step 1; I am utilizing the open source libraries javassist and srcgen4javassist/codemodel to create the interface and for step 2; i am using fluent-interface-proxy.
    
 The module builders deals with provisioning the interface and wrapper methods to create the builder and builders-usage to demonstrate auto-generation of interface for builder and a usage of generated interface to crate a proxy based fluent builder.
 
