@@ -35,7 +35,7 @@ public class TestExample {
     @Test
     public void test() {
         Example example = Example.builder().foo(Integer.MAX_VALUE).bar(test).build();
-        Example example1 = Example.builder().foo(Integer.MIN_VALUE).bar(test + "1").build();
+        Example example1 = Example.builder().foo(Integer.SIZE).bar(test + "1").build();
         Assert.assertEquals(Integer.MAX_VALUE, example.getFoo());
         Assert.assertEquals(test, example.getBar());
         Assert.assertEquals(example1, example1);
@@ -47,6 +47,22 @@ public class TestExample {
         Assert.assertNotSame(example1.hashCode(), example.hashCode());
         Assert.assertFalse(example.equals(null));
         
+    }
+    
+    /**
+     * Test for illegal asserts for foo.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalFoo() {
+        Example example = Example.builder().foo(-1).bar(test).build();
+    }
+    
+    /**
+     * Test for illegal asserts for bar.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalBar() {
+        Example example = Example.builder().foo(Integer.MAX_VALUE).bar(null).build();
     }
 }
 

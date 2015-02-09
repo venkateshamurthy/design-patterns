@@ -1,6 +1,8 @@
 A project to explore design patterns. Each pattern may contain module and usually a usage module would be present if there is auto-generate phase.
 
-###  Build status:  [![Build Status](https://travis-ci.org/venkateshamurthy/design-patterns.svg?branch=master)](https://travis-ci.org/venkateshamurthy/design-patterns)  [![Coverage Status](https://coveralls.io/repos/venkateshamurthy/design-patterns/badge.png?branch=master)](https://coveralls.io/r/venkateshamurthy/design-patterns?branch=master)
+###  Build status:  
+[![Build Status](https://travis-ci.org/venkateshamurthy/design-patterns.svg?branch=master)](https://travis-ci.org/venkateshamurthy/design-patterns)  
+[![Coverage Status](https://coveralls.io/repos/venkateshamurthy/design-patterns/badge.png?branch=master)](https://coveralls.io/r/venkateshamurthy/design-patterns?branch=master)
 
 Note:
 -----
@@ -239,6 +241,76 @@ class Example {
     private String bar;
 }
 ```
+OR with an value adding validating Builder as follows. This basically builds an extended Builder that adds validation as well.
+```java
+package com.github.venkateshamurthy.designpatterns.builders.lombok;
+
+import java.util.regex.Pattern;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Builder;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.java.Log;
+
+/**
+ * Type Example.
+ * @author vemurthy
+ *
+ */
+@Builder
+@Data
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Log
+public class Example {
+    private int foo;    //This is private final
+    private String bar; //This is private final
+    
+    /**
+     * Type Builder for validating parameters.
+     * @author vemurthy
+     *
+     */
+    @Data(staticConstructor = "of")
+    @EqualsAndHashCode(callSuper = false)
+    public static class Builder extends ExampleBuilder {
+        private static final Pattern BAR_PATTERN = Pattern.compile("[a-zA-z0-9]+");
+        @Override
+        public ExampleBuilder bar(String bar) {
+            if (bar == null || !BAR_PATTERN.matcher(bar).matches()) {
+                throw new IllegalArgumentException("bar variable needs to follow pattern:" + BAR_PATTERN);
+            }
+            return super.bar(bar);
+        }
+        
+        @Override
+        public ExampleBuilder foo(int foo) {
+            if (foo < 0) {
+                throw new IllegalArgumentException("foo needs to be positive");
+            }
+            return super.foo(foo);
+        }
+        
+        /* (non-Javadoc)
+         * @see com.github.venkateshamurthy.designpatterns.builders.lombok.Example.ExampleBuilder#build()
+         */
+        /**{@inheritDoc}.*/
+        public Example build() {
+            log.info("Building with lombok...");
+            return super.build();
+        }
+    }
+    /**
+     * Builder creator.
+     * @return {@link Builder}
+     */
+    public static Builder builder() {
+        return Builder.of();
+    }
+}
+
+```
 Usage of lombok based builders:
 ```java
 package com.github.venkateshamurthy.designpatterns.builders.lombok;
@@ -272,6 +344,22 @@ public class TestExample {
         Assert.assertNotSame(example1.hashCode(), example.hashCode());
         Assert.assertFalse(example.equals(null));
         
+    }
+    
+    /**
+     * Test for illegal asserts for foo.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalFoo() {
+        Example example = Example.builder().foo(-1).bar(test).build();
+    }
+    
+    /**
+     * Test for illegal asserts for bar.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalBar() {
+        Example example = Example.builder().foo(Integer.MAX_VALUE).bar(null).build();
     }
 }
 ```
