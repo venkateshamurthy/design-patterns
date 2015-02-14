@@ -145,6 +145,68 @@ An another way could be to just to use the -cls option (can be handly if there a
         file4.delete();
     }
 ```
+
+### How to include in maven as an example:
+```java
+Make sure to have a file in the class path containing all the fully qualified class names (each class in a line). 
+So presuming this to be src/main/resources/class-listing.txt ; just ensure that the resources section is configuered to copy this as resource.
+Say for eg:
+		<resources>
+			<resource>
+				<directory>target/generated-sources/</directory>
+				<includes>
+					<include>**/*.xml</include>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.xml</include>
+					<include>**/*.txt</include>  
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+		</resources>
+
+Next under dependencies: add the jar-with-dependencies
+		<dependency>
+			<groupId>com.github.venkateshamurthy</groupId>
+			<artifactId>builders</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<classifier>jar-with-dependencies</classifier>
+		</dependency>
+		
+Next, we need to run this : Here let us assume the code that is generated for POJO is happening in generate-sources phase 
+so we will need to run our code for getting builder post compile phase such as process-classes as follows
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.3.2</version>
+				<executions>
+					<execution>
+						<id>generate-pojo-builder</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>com.github.venkateshamurthy.designpatterns.builders.FluentBuilders</argument>
+								<argument>-src</argument>
+								<argument>src/main/java</argument>
+								<argument>--file-listing</argument>
+								<argument>class-listing.txt</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+```
+
 Builder with AutoValue and Lombok:
 ----------------------------------
 This is an example condensate with Google auto value. Here the POJO class needs to provide inner static abstract class with each attribute/property exposed an abstract method 
