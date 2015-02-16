@@ -147,64 +147,200 @@ An another way could be to just to use the -cls option (can be handly if there a
 ```
 
 ### How to include in maven as an example:
-```java
 Make sure to have a file in the class path containing all the fully qualified class names (each class in a line). 
 So presuming this to be src/main/resources/class-listing.txt ; just ensure that the resources section is configuered to copy this as resource.
-Say for eg:
-		<resources>
-			<resource>
-				<directory>target/generated-sources/</directory>
-				<includes>
-					<include>**/*.xml</include>
-					<include>**/*.properties</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>**/*.xml</include>
-					<include>**/*.txt</include>  
-					<include>**/*.properties</include>
-				</includes>
-			</resource>
-		</resources>
+#### Pojo1.java for the example of Pojo class
+```java
+package com.github.venkateshamurthy.designpatterns.builders.usage;
 
-Next under dependencies: add the jar-with-dependencies
-		<dependency>
-			<groupId>com.github.venkateshamurthy</groupId>
-			<artifactId>builders</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<classifier>jar-with-dependencies</classifier>
-		</dependency>
-		
-Next, we need to run this : Here let us assume the code that is generated for POJO is happening in generate-sources phase 
-so we will need to run our code for getting builder post compile phase such as process-classes as follows
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.3.2</version>
-				<executions>
-					<execution>
-						<id>generate-pojo-builder</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>com.github.venkateshamurthy.designpatterns.builders.FluentBuilders</argument>
-								<argument>-src</argument>
-								<argument>src/main/java</argument>
-								<argument>--file-listing</argument>
-								<argument>class-listing.txt</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+public class Pojo1 {
+    public Pojo1() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+    public int getI() {
+        return i;
+    }
+    public void setI(int i) {
+        this.i = i;
+    }
+    public String getJ() {
+        return j;
+    }
+    public void setJ(String j) {
+        this.j = j;
+    }
+    public String toString() {
+        return getClass().getSimpleName()+":i="+i+" j="+j;
+    }
+    int i;
+    String j;    
+}
+```
+#### src/main/resources/class-listing.txt
+```java
+com.github.venkateshamurthy.designpatterns.builders.usage.Pojo1
+```
+
+#### TestBuildersUsage as a test code that uses compiled class of generated builder class
+```java
+package com.github.venkateshamurthy.designpatterns.builders.usage;
+
+import org.junit.Test;
+
+import com.github.venkateshamurthy.designpatterns.builders.FluentBuilders;
+
+public class TestBuildersUsage {
+    @Test
+    public void test() throws ClassNotFoundException {
+       Pojo1 pojo1=FluentBuilders.<Pojo1,Pojo1Builder>builder(Pojo1.class)
+                       .setI(10).setJ("Murthy").build();
+       System.out.println(pojo1.toString());
+    }
+}
+```
+
+#### pom.xml in this example could be as follows:
+
+```java
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.venkateshamurthy</groupId>
+    <artifactId>builders-test</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <properties>
+        <generatedSourcesDirectory>src/generated/java</generatedSourcesDirectory>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.venkateshamurthy</groupId>
+            <artifactId>builders</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <classifier>jar-with-dependencies</classifier>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.5</version>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>oss-snapshot</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>apache-snapshots</id>
+            <url>https://repository.apache.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>${generatedSourcesDirectory}</directory>
+                <includes>
+                    <include>**/*.java</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.6.1</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${generatedSourcesDirectory}</directory>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.3.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>${java.home}/bin/java</executable>
+                    <workingDirectory>${project.build.dir}</workingDirectory>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <classpath />
+                        <argument>com.github.venkateshamurthy.designpatterns.builders.FluentBuilders</argument>
+                        <argument>-src</argument>
+                        <argument>${generatedSourcesDirectory}</argument>
+                        <!-- Use a -cls argument or -file argument -->
+                        <!--
+                        <argument>-cls</argument>
+                        <argument>com.github.venkateshamurthy.designpatterns.builders.usage.Pojo1</argument>
+                        -->
+                        <argument>-file</argument>
+                        <argument>class-listing.txt</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${generatedSourcesDirectory}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <executions>
+                    <execution>
+                       <!--  This first pass will compile Pojo1 and any other existing java files -->
+                        <id>first-pass-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration></configuration>
+                    </execution>
+                    <execution>
+                       <!--  Second pass compilation is required for sources that are generated post compile phase(For eg: Pojo1Builder.java)  -->
+                        <id>second-pass-compile-generated-sources</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <generatedSourcesDirectory>${generatedSourcesDirectory}</generatedSourcesDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
 ```
 
 Builder with AutoValue and Lombok:
