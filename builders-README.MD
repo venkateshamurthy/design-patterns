@@ -239,6 +239,12 @@ public class TestBuildersUsage {
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>class-listing.txt</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>${generatedSourcesDirectory}</directory>
                 <includes>
                     <include>**/*.java</include>
