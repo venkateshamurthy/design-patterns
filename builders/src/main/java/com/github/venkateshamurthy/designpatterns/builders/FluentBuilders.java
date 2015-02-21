@@ -83,8 +83,8 @@ import com.sun.codemodel.JMethod;
  * <ol>
  * <li><a href="http://www.javassist.org"><b><i>javassist</i></b> - to create
  * interface object dynamically</a></li>
- * <li><a href="http://www.fuin.org/srcgen4javassist/index.html"><i><b>
- * srcgen4javassist</b></i> - to write the interface source in human readable
+ * <li><a href="https://codemodel.java.net"><i><b>
+ * codemodel</b></i> - to write the interface source in human readable
  * source code format</a></li>
  * <li><a href="https://github.com/davidmarquis/fluent-interface-proxy"><b><i>
  * fluentinterface</i></b> - for actually generating the proxy builder for the
