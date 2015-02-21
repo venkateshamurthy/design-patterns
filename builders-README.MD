@@ -1,5 +1,5 @@
 # Builder: 
-### [Click here for a Blog](http://vemurthy.blogspot.com/2015/02/builder-pattern.html)
+### [Click here for the blog](http://vemurthy.blogspot.com/2015/02/builder-pattern.html)
 
 Many a times; the POJOs that is to be used are generated code from some tool/utility and hence may not be always possible to derive / inherit / add code to the already generated  code.
 
