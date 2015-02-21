@@ -541,7 +541,7 @@ public class TestFluentBuilders {
         Assert.assertNotNull(fluentBuilderGenerator.getSourceFolderRoot());
         Assert.assertNotNull(fluentBuilderGenerator.getSetMethodNamePattern());
         Assert.assertNotNull(fluentBuilderGenerator.getFluentbuilderclass());
-        Assert.assertEquals(FluentBuilders.TYPICAL_SOURCE_FOLDER, fluentBuilderGenerator.getSourceFolderRoot().getPath());
+        Assert.assertEquals(new File(FluentBuilders.TYPICAL_SOURCE_FOLDER), fluentBuilderGenerator.getSourceFolderRoot());
         Assert.assertEquals(FluentBuilders.TYPICAL_SET_METHOD_PATTERN, fluentBuilderGenerator.getSetMethodNamePattern().pattern());
         File file1 = getFile(fluentBuilderGenerator.getSourceFolderRoot(), Pojo1.class);
         File file2 = getFile(fluentBuilderGenerator.getSourceFolderRoot(), Pojo2.class);
