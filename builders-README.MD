@@ -25,9 +25,9 @@ My special thanks to the following projects and their authors:
 
 How to compile and test:
 
-To create and install builders module: mvn --projects builders clean install
+To create and install builders module: mvn --settings ./settings.xml --projects builders clean install
 
-To create proxy interface and test usage: mvn --projects builders-usage clean test
+To create proxy interface and test usage: mvn --settings ./settings.xml --projects builders-usage clean test
 
 Example usage:
 
