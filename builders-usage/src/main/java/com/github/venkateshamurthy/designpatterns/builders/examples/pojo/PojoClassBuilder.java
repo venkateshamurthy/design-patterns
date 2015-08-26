@@ -11,12 +11,12 @@ public interface PojoClassBuilder
 {
 
 
-    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setA(int arg0);
+    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setJunk123(Date arg0);
 
-    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setB(String arg0);
+    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setA(int arg0);
 
     public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setToList(List arg0);
 
-    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setJunk123(Date arg0);
+    public com.github.venkateshamurthy.designpatterns.builders.examples.pojo.PojoClassBuilder setB(String arg0);
 
 }

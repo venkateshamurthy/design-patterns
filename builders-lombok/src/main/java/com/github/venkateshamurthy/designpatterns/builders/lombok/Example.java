@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental.Builder;
+import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.java.Log;
 
